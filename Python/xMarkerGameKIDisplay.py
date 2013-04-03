@@ -50,6 +50,7 @@ This is the "new" python handler for Marker Games
 from PlasmaTypes import *
 from PlasmaKITypes import *
 from xMarkerGameUtils import *
+from xWeakRef import *
 
 
 #Default Values
@@ -71,7 +72,7 @@ class xMarkerGameKIDisplay:
 
         #Store the KI's key... we use this for mini-game registration
         self.key = KI.key
-        self.KI = KI
+        self.KI = LazyWeakRef(KI)
 
         #Setup default values for creating a game
         #This works as existing games will ignore these fields and return whatever is on the template!
