@@ -474,103 +474,107 @@ class ptAttribActivatorList(ptAttributeKeyList):
     def getdef(self):
         return (self.id,self.name,7)
 
-# Responder attribute (pick responder types box)
 class ptAttribResponder(ptAttributeKeyList):
-    def __init__(self,id,name=None,statelist=None,byObject=0,netForce=0):
-        ptAttributeKeyList.__init__(self,id,name,byObject,netForce)
+    """Responder attribute that notifies an internal plResponderModifier"""
+
+    def __init__(self, id, name=None, statelist=None, byObject=False, netForce=False):
+        ptAttributeKeyList.__init__(self, id, name, byObject, netForce)
         self.state_list = statelist
+
     def getdef(self):
-        return (self.id,self.name,9)
-    def run(self,key,state=None,events=None,avatar=None,objectName=None,netForce=0,netPropagate=1,fastforward=0):
-        # has the value been set?
-        if type(self.value) != type(None):
-            nt = ptNotify(key)
-            nt.clearReceivers()
-            # see if the value is a list or byObject or a single
-            if type(objectName) != type(None) and type(self.byObject) != type(None):
-                nt.addReceiver(self.byObject[objectName])
-            elif type(self.value)==type([]):
-                for resp in self.value:
-                    nt.addReceiver(resp)
-            else:
-                nt.addReceiver(self.value)
-            if not netPropagate:
-                nt.netPropagate(0)
-                # ptNotify defaults to netPropagate=1
-            if netForce or self.netForce:
-                nt.netForce(1)
-            # see if the state is specified
-            if type(state) == type(0):
-                raise ptResponderStateError,"Specifying state as a number is no longer supported"
-            elif type(state) == type(''):
-                if type(self.state_list) != type(None):
-                    try:
-                        idx = self.state_list.index(state)
-                        nt.addResponderState(idx)
-                    except ValueError:
-                        raise ptResponderStateError, "There is no state called '%s'"%(state)
-                else:
-                    raise ptResponderStateError,"There is no state list provided"
-            # see if there are events to pass on
-            if type(events) != type(None):
-                PtAddEvents(nt,events)
-            if type(avatar) != type(None):
-                nt.addCollisionEvent(1,avatar.getKey(),avatar.getKey())
-            if fastforward:
-                nt.setType(PtNotificationType.kResponderFF)
-                # if fast forwarding, then only do it on the local client
-                nt.netPropagate(0)
-                nt.netForce(0)
-            nt.setActivate(1.0)
-            nt.send()
-    def setState(self,key,state,objectName=None,netForce=0,netPropagate=1):
-        # has the value been set?
-        if type(self.value) != type(None):
-            nt = ptNotify(key)
-            nt.clearReceivers()
-            # see if the value is a list or byObject or a single
-            if type(objectName) != type(None) and type(self.byObject) != type(None):
-                nt.addReceiver(self.byObject[objectName])
-            elif type(self.value)==type([]):
-                for resp in self.value:
-                    nt.addReceiver(resp)
-            else:
-                nt.addReceiver(self.value)
-            if not netPropagate:
-                nt.netPropagate(0)
-                # ptNotify defaults to netPropagate=1
-            if netForce or self.netForce:
-                nt.netForce(1)
-            # see if the state is specified
-            if type(state) == type(0):
-                raise ptResponderStateError,"Specifying state as a number is no longer supported"
-            elif type(state) == type(''):
-                if type(self.state_list) != type(None):
-                    try:
-                        idx = self.state_list.index(state)
-                        nt.addResponderState(idx)
-                    except ValueError:
-                        raise ptResponderStateError, "There is no state called '%s'"%(state)
-                else:
-                    raise ptResponderStateError,"There is no state list provided"
-            # see if there are events to pass on
-            nt.setType(PtNotificationType.kResponderChangeState)
-            nt.setActivate(1.0)
-            nt.send()
+        return (self.id, self.name, 9)
+
+    def _setup_notify_receivers(self, notify, objectName=None):
+        notify.clearReceivers()
+
+        # If object name and we are a byObject attribute, we can send messages
+        # to specific responders. Otherwise, notify all of them.
+        if objectName is not None and self.byObject is not None:
+            notify.addReceiver(self.byObject[objectName])
+        elif hasattr(self.value, "__iter__"):
+            for key in self.value:
+                notify.addReceiver(key)
+        else:
+            notify.addReceiver(self.value)
+
+    def _setup_notify_state(self, notify, state):
+        try:
+            int(state)
+        except:
+            pass
+        else:
+            raise ptResponderStateError("Specifying state as a number is no longer supported")
+        if self.state_list is None:
+            raise ptResponderStateList("This attribute has no list of states")
+
+        try:
+            notify.addResponderState(self.state_list.index(state))
+        except ValueError:
+            raise ptResponderStateError("'%s' is not a valid state for this attribute" % state)
+
+    def run(self, key, state=None, events=None, avatar=None, objectName=None, netForce=False, netPropagate=True, fastforward=False):
+        """Notifies the plResponderModifier that it needs to change its state"""
+
+        # We won't send any messages if the attribute has not been initialized
+        if self.value is None:
+            return False
+
+        notify = ptNotify(key)
+        self._setup_notify_receivers(notify, objectName)
+
+        # Simple plMessage flags
+        notify.netPropagate(netPropagate and not fastforward)
+        notify.netForce((netForce or self.netForce) and not fastforward)
+        if fastforward:
+            notify.setType(PtNotificationType.kResponderFF)
+
+        # Translate the desired state
+        if state is not None:
+            self._setup_notify_state(notify, state)
+
+        # Events
+        if events is not None:
+            PtAddEvents(notify, events)
+        if avatar is not None:
+            avKey = avatar.getKey()
+            notify.addCollisionEvent(True, avKey, avKey)
+
+        # Whoosh... Off it goes.
+        notify.setActivate(1.0)
+        notify.send()
+        return True
+
+    def setState(self, key, state, objectName=None, netForce=False, netPropagate=True):
+        if self.value is None:
+            return False
+
+        notify = ptNotify(key)
+        self._setup_notify_receivers(notify, objectName)
+
+        # Message flags
+        notify.netPropagate(netPropagate)
+        notify.netForce(netForce or self.netForce)
+
+        # Translate the desired state
+        if state is not None:
+            self._setup_notify_state(notify, state)
+
+        # Whoosh... Off it goes.
+        notify.setState(PtNotificationType.kResponderChangeState)
+        notify.setActivate(1.0)
+        notify.send()
+        return True
 
     def getState(self):
-        if (type(self.value) != type(None)):
-            if type(self.value)==type([]):
-                for resp in self.value:
-                    obj = resp.getSceneObject()
-                    idx = obj.getResponderState()
-                    curState = self.state_list[idx]
-                    return curState
+        if self.value is not None:
+            # Looks like Cyan only cares about the FIRST key's state
+            if hasattr(self.value, "__getitem__"):
+                key = self.value[0]
             else:
-                obj = self.value.getSceneObject()
-                idx = obj.getResponderState()
-                curState = self.state_list[idx]
-                return curState
+                key = self.value
+            index = key.getSceneObject().getResponderState()
+            return self.state_list[index]
+        return None
 
 
 # Responder attribute List
