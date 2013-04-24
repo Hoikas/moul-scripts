@@ -407,53 +407,42 @@ class ptAttribSceneobjectList(ptAttributeList):
 
 # attribute list of keys
 class ptAttributeKeyList(ptAttributeList):
-    def __init__(self,id,name=None,byObject=0,netForce=0):
-        ptAttributeList.__init__(self,id,name)
+    def __init__(self, id, name=None, byObject=False, netForce=False):
+        ptAttributeList.__init__(self, id, name)
         self.value = []
         self.netForce = netForce
         if byObject:
             self.byObject = {}
         else:
             self.byObject = None
-    def enable(self,objectName=None):
-        if self.value != None:
-            if type(objectName) != type(None) and type(self.byObject) != type(None):
-                pkey = self.byObject[objectName]
-                if self.netForce:
-                    pkey.netForce(1)
-                pkey.enable()
-            elif type(self.value)==type([]):
-                for pkey in self.value:
-                    if self.netForce:
-                        pkey.netForce(1)
-                    pkey.enable()
-            else:
-                if self.netForce:
-                    self.value.netForce(1)
-                self.value.enable()
-    def disable(self,objectName=None):
-        if self.value != None:
-            if type(objectName) != type(None) and type(self.byObject) != type(None):
-                pkey = self.byObject[objectName]
-                if self.netForce:
-                    pkey.netForce(1)
-                pkey.disable()
-            elif type(self.value)==type([]):
-                for pkey in self.value:
-                    if self.netForce:
-                        pkey.netForce(1)
-                    pkey.disable()
-            else:
-                if self.netForce:
-                    self.value.netForce(1)
-                self.value.disable()
-    def __setvalue__(self,value):
-        if self.netForce:
-            value.netForce(1)
-        self.value.append(value)
-        if type(self.byObject) == type({}):
-            name = value.getName()
-            self.byObject[name] = value
+
+    def _eval_value_attr(self, objectName, attr):
+        if objectName is not None and self.byObject is not None:
+            pkey = self.byObject[objectName]
+            pkey.netForce(self.netForce)
+            getattr(pkey, attr)()
+        elif hasattr(self.value, "__iter__"):
+            for pkey in self.value:
+                pkey.netForce(self.netForce)
+                getattr(pkey, attr)()
+        else:
+            self.value.netForce(self.netForce)
+            getattr(pkey, attr)()
+
+    def enable(self, objectName=None):
+        self._eval_value_attr(objectName, "enable")
+    def disable(self, objectName=None):
+        self._eval_value_attr(objectName, "disable")
+
+    def __setvalue__(self, value):
+        value.netForce(self.netForce)
+
+        if hasattr(self.value, "__iter__"):
+            self.value.append(value)
+        else:
+            self.value = value
+        if self.byObject is not None:
+            self.byObject[value.getName()] = value
 
 # Activator attribute (pick activator types box)
 class ptAttribActivator(ptAttributeKeyList):
