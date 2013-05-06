@@ -321,11 +321,26 @@ class ptAttribute:
     def getVisInfo(self):
         return (self.vis_id, self.vis_states)
 
-# base class for all list attributes
-# (This makes it easy to find all the attributes that are a list)
+
 class ptAttributeList(ptAttribute):
-    def __init__(self,id,name):
-        ptAttribute.__init__(self,id,name)
+    """Base class for list attributes"""
+
+    def __init__(self, id, name, byObject, netForce=False):
+        ptAttribute.__init__(self, id, name)
+        self.value = []
+        self.netForce = netForce
+        if byObject:
+            self.byObject = {}
+        else:
+            self.byObject = None
+
+    def __setvalue__(self, value):
+        if hasattr(value, "netForce"):
+            value.netForce(self.netForce)
+        self.value.append(value)
+        if self.byObject is not None:
+            self.byObject[value.getName()] = value
+
 
 # Boolean attribute (Checkbox)
 class ptAttribBoolean(ptAttribute):
@@ -384,37 +399,23 @@ class ptAttribSceneobject(ptAttribute):
         self.value = value
         self.sceneobject = self.value
 
-# Sceneobject list attribute (pick multiple sceneobjects box)
-class ptAttribSceneobjectList(ptAttributeList):
-    def __init__(self,id,name=None,byObject=0,netForce=0):
-        ptAttributeList.__init__(self,id,name)
-        self.value = []     # start as an empty list
-        self.sceneobject = self.value
-        self.netForce = netForce
-        if byObject:
-            self.byObject = {}
-        else:
-            self.byObject = None
-    def getdef(self):
-        return (self.id,self.name,6)
-    def __setvalue__(self,value):
-        if self.netForce:
-            value.netForce(1)
-        self.value.append(value)
-        if type(self.byObject) == type({}):
-            name = value.getName()
-            self.byObject[name] = value
 
-# attribute list of keys
-class ptAttributeKeyList(ptAttributeList):
+class ptAttribSceneobjectList(ptAttributeList):
+    """Attribute containing a list of scene objects"""
+
     def __init__(self, id, name=None, byObject=False, netForce=False):
-        ptAttributeList.__init__(self, id, name)
-        self.value = []
-        self.netForce = netForce
-        if byObject:
-            self.byObject = {}
-        else:
-            self.byObject = None
+        ptAttributeList.__init__(self, id, name, byObject, netForce)
+        self.sceneobject = self.value
+
+    def getdef(self):
+        return (self.id, self.name, 6)
+
+
+class ptAttributeKeyList(ptAttributeList):
+    """Attribute containing a list of keys (or a single key, in many cases)"""
+
+    def __init__(self, id, name=None, byObject=False, netForce=False):
+        ptAttributeList.__init__(self, id, name, byObject, netForce)
 
     def _eval_value_attr(self, objectName, attr):
         if objectName is not None and self.byObject is not None:
@@ -444,24 +445,31 @@ class ptAttributeKeyList(ptAttributeList):
         if self.byObject is not None:
             self.byObject[value.getName()] = value
 
-# Activator attribute (pick activator types box)
 class ptAttribActivator(ptAttributeKeyList):
+    """Attribute representing a list of Activator Conditional Objects"""
+
     def getdef(self):
-        return (self.id,self.name,8)
+        return (self.id, self.name, 8)
+
     def enableActivator(self):
         for key in self.value:
             key.getSceneObject().physics.enable()
+
     def disableActivator(self):
         for key in self.value:
             key.getSceneObject().physics.disable()
+
     def volumeSensorIgnoreExtraEnters(self,state):
         for key in self.value:
             key.getSceneObject().volumeSensorIgnoreExtraEnters(state)
 
-# Activator attribute (pick activator types box)
+
 class ptAttribActivatorList(ptAttributeKeyList):
+    """Attribute representing a list of Activator Conditional Objects"""
+
     def getdef(self):
-        return (self.id,self.name,7)
+        return (self.id, self.name, 7)
+
 
 class ptAttribResponder(ptAttributeKeyList):
     """Responder attribute that notifies an internal plResponderModifier"""
@@ -566,22 +574,23 @@ class ptAttribResponder(ptAttributeKeyList):
         return None
 
 
-# Responder attribute List
 class ptAttribResponderList(ptAttribResponder):
+    """Attribute representing a list of Responder Modifiers"""
+
     def getdef(self):
-        return (self.id,self.name,10)
+        return (self.id, self.name, 10)
  
 # Activator attribute (pick activator types box)
 class ptAttribNamedActivator(ptAttribActivator):
     def getdef(self):
         # get attribute as a string, then we will turn it into an activator later
-        return (self.id,self.name,4,self.value)
+        return (self.id, self.name, 4, self.value)
 
 # Responder attribute (pick responder types box)
 class ptAttribNamedResponder(ptAttribResponder):
     def getdef(self):
         # get attribute as a string, then we will turn it into an responder later
-        return (self.id,self.name,4,self.value)
+        return (self.id, self.name, 4, self.value)
 
 # DynamicText attribute pick button
 class ptAttribDynamicMap(ptAttribute):
@@ -662,15 +671,19 @@ class ptAttribSwimCurrent(ptAttribute):
         self.current = ptSwimCurrentInterface(value)
         self.value = self.current
 
+
 class ptAttribClusterList(ptAttributeList):
-    def __init__(self,id,name=None):
-        ptAttribute.__init__(self,id,name)
-        self.value = []
+    """Attribute representing a list of Cluster Groups"""
+    def __init__(self, id, name=None):
+        ptAttributeList.__init__(self, id, name, byObject=False)
+
     def getdef(self):
-        return (self.id,self.name,22)
-    def __setvalue__(self,value):
+        return (self.id, self.name, 22)
+
+    def __setvalue__(self, value):
         self.value.append(ptCluster(value))
-    
+
+
 # special class for byObject that gets the parents name of the values when someone first asks for them
 class ptByAnimObject(dict):
     def __init__(self):
@@ -830,26 +843,14 @@ class ptAttribMaterialAnimation(ptAttribute):
         return (self.id, self.name, 23)
 
 
-# Sceneobject list attribute (pick multiple sceneobjects box)
 class ptAttribMaterialList(ptAttributeList):
-    def __init__(self,id,name=None,byObject=0,netForce=0):
-        ptAttributeList.__init__(self,id,name)
-        self.value = []     # start as an empty list
+    def __init__(self, id, name=None, byObject=False, netForce=False):
+        ptAttributeList.__init__(self, id, name, byObject, netForce)
         self.map = self.value
-        self.netForce = netForce
-        if byObject:
-            self.byObject = {}
-        else:
-            self.byObject = None
+
     def getdef(self):
-        return (self.id,self.name,6)
-    def __setvalue__(self,value):
-        if self.netForce:
-            value.netForce(1)
-        self.value.append(value)
-        if type(self.byObject) == type({}):
-            name = value.getName()
-            self.byObject[name] = value
+        return (self.id, self.name, 6)
+
 
 # a GUI PopUpMenu attribute
 class ptAttribGUIPopUpMenu(ptAttribute):
