@@ -3291,6 +3291,9 @@ class xKI(ptModifier):
         onlyPMCheckbox = ptGUIControlCheckBox(KISettings.dialog.getControlFromTag(kGUI.BKIKIOnlyPM))
         onlyPMCheckbox.setChecked(self.onlyGetPMsFromBuddies)
 
+        mutualIgnoreCheckbox = ptGUIControlCheckBox(KISettings.dialog.getControlFromTag(kGUI.BKIKIMutualIgnore))
+        mutualIgnoreCheckbox.setChecked(PtIsMutualIgnoreEnabled())
+
     ## Refresh the volume settings to match the current values.
     def RefreshVolumeSettings(self):
 
@@ -6357,6 +6360,8 @@ class xKI(ptModifier):
                     PtDebugPrint(u"KISettings: FadeTime enabled.", level=kDebugDumpLevel)
             elif kiID == kGUI.BKIKIOnlyPM:
                 self.onlyGetPMsFromBuddies = control.isChecked()
+            elif kiID == kGUI.BKIKIMutualIgnore:
+                PtEnableMutualIgnore(control.isChecked())
             elif kiID == kGUI.BKIKIBuddyCheck:
                 self.onlyAllowBuddiesOnRequest = control.isChecked()
 

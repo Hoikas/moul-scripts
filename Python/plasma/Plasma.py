@@ -259,6 +259,10 @@ def PtEnableMovementKeys():
     """Enable avatar movement input"""
     pass
 
+def PtEnableMutualIgnore(status):
+    """Toggles the mutual ignore functionality"""
+    pass
+
 def PtEnablePlanarReflections(on):
     """Enables/disables planar reflections"""
     pass
@@ -591,6 +595,10 @@ def PtIsInternalRelease():
 
 def PtIsMouseInverted():
     """Is the mouse currently inverted?"""
+    pass
+
+def PtIsMutualIgnoreEnabled():
+    """Returns if mutual ignore is enabled"""
     pass
 
 def PtIsShadowsEnabled():

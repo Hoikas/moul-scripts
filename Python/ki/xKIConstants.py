@@ -427,6 +427,8 @@ class kGUI:
     BKIKIFadeTime = 81
     BKIKIOnlyPM = 90
     BKIKIBuddyCheck = 91
+    BKIKIMutualIgnore = 560
+    BKIKIMutualIgnoreText = 561
     BKIKISettingsText = 570
     BKIKIFontSizeText = 580
     BKIKIFadeTimeText = 581
