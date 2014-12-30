@@ -4754,7 +4754,7 @@ class xKI(ptModifier):
 
                 # Create the note.
                 note = ptVaultTextNoteNode(0)
-                note.setTextW(PtGetLocalizedString("KI.Journal.InitialMessage"))
+                note.noteSetText(PtGetLocalizedString("KI.Journal.InitialMessage"))
                 note.setTitleW(PtGetLocalizedString("KI.Journal.InitialTitle"))
 
                 self.BKCurrentContent = journal.addNode(note)
@@ -5472,7 +5472,7 @@ class xKI(ptModifier):
                                 if buf[:len(PtGetLocalizedString("KI.Journal.InitialMessage"))] == PtGetLocalizedString("KI.Journal.InitialMessage"):
                                     buf = buf[len(PtGetLocalizedString("KI.Journal.InitialMessage")):]
                                 edElement = edElement.upcastToTextNoteNode()
-                                edElement.setTextW(buf)
+                                edElement.noteSetText(buf)
                                 edElement.save()
                 if self.BKEditField != kGUI.BKEditFieldJRNNote:
                     # Put the fields back into no-edit mode.

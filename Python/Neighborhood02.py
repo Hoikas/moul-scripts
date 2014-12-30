@@ -123,7 +123,7 @@ class Neighborhood02(ptResponder):
                         if (thetext.count("\n") + 1) > 15:
                             thetext = thetext[:thetext.rfind("\n")]
                         thetext = currenttimestr + (" " * (30 - len(currenttimestr))) + playername + "\n" + thetext
-                        playerlist.setText(thetext)
+                        playerlist.noteSetText(thetext)
                         playerlist.save()
                     else:
                         currenttime = time.gmtime(PtGetDniTime())
@@ -133,5 +133,5 @@ class Neighborhood02(ptResponder):
                         
                         playerlist = ptVaultTextNoteNode(0)
                         playerlist.setTitle("Visitors, Visiteurs, Besucher")
-                        playerlist.setText(thetext)
+                        playerlist.noteSetText(thetext)
                         deviceInbox.addNode(playerlist)

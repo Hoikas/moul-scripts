@@ -115,7 +115,7 @@ class nb01UpdateHoodInfoImager(ptResponder):
                     thetext = thetext[:thetext.rfind("\n")]
                 thetext = currenttimestr + (" " * (30 - len(currenttimestr))) + playername + "\n" + thetext
                 
-                playerlist.setText(thetext)
+                playerlist.noteSetText(thetext)
                 playerlist.forceSave()
             else:
                 currenttime = time.gmtime(PtGetDniTime())
@@ -124,7 +124,7 @@ class nb01UpdateHoodInfoImager(ptResponder):
                 
                 playerlist = ptVaultTextNoteNode(0)
                 playerlist.setTitle("Visitors, Visiteurs, Besucher")
-                playerlist.setText(thetext)
+                playerlist.noteSetText(thetext)
                 deviceInbox.addNode(playerlist)
 
         if playerlist and playerlist.getID() > 0:
@@ -189,13 +189,13 @@ class nb01UpdateHoodInfoImager(ptResponder):
                         break
             if hoodpelletscore:
                 newText = str(hoodpoints)
-                hoodpelletscore.setText(newText)
+                hoodpelletscore.noteSetText(newText)
                 hoodpelletscore.forceSave()
             else:
                 hoodpelletscore = ptVaultTextNoteNode(0)
                 hoodpelletscore.setTitle("Neighborhood Pellet Score")
                 newText = str(hoodpoints)
-                hoodpelletscore.setText(newText)
+                hoodpelletscore.noteSetText(newText)
                 deviceInbox.addNode(hoodpelletscore)
 
             if hoodpelletscore and hoodpelletscore.getID() > 0:
@@ -237,14 +237,14 @@ class nb01UpdateHoodInfoImager(ptResponder):
                     if curindex > 20:
                         break
                     
-                pelletscores.setText(newText)
+                pelletscores.noteSetText(newText)
                 pelletscores.forceSave()
             else:
                 playername = PtGetLocalPlayer().getPlayerName()
                 thetext = "%s\t%i\n" % (newplayername, pelletscore)
                 pelletscores = ptVaultTextNoteNode(0)
                 pelletscores.setTitle("Pellet Scores")
-                pelletscores.setText(thetext)
+                pelletscores.noteSetText(thetext)
                 deviceInbox.addNode(pelletscores)
 
             if pelletscores and pelletscores.getID() > 0:

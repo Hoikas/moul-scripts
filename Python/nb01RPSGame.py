@@ -773,10 +773,10 @@ class nb01RPSGame(ptResponder):
 
                 # if we have the text note then update it, otherwise create it
                 if neighborhoodScoreNote:
-                    neighborhoodScoreNote.setText(nbscorestxt)
+                    neighborhoodScoreNote.noteSetText(nbscorestxt)
                     neighborhoodScoreNote.save()
                 else:
                     neighborhoodScoreNote = ptVaultTextNoteNode(0)
                     neighborhoodScoreNote.setTitle("Neighborhood Heek Scores")
-                    neighborhoodScoreNote.setText(nbscorestxt)
+                    neighborhoodScoreNote.noteSetText(nbscorestxt)
                     dinbox.addNode(neighborhoodScoreNote)
