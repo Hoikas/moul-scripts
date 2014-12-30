@@ -110,7 +110,7 @@ class Neighborhood02(ptResponder):
                                 playerlist = itemtn
                                 break
                             elif itemtn.getTitle() == "Most Recent Visitors":
-                                itemtn.setTitle("Visitors, Visiteurs, Besucher")
+                                itemtn.noteSetTitle("Visitors, Visiteurs, Besucher")
                                 playerlist = itemtn
                                 break
 
@@ -132,6 +132,6 @@ class Neighborhood02(ptResponder):
                         thetext = currenttimestr + (" " * (30 - len(currenttimestr))) + playername
                         
                         playerlist = ptVaultTextNoteNode(0)
-                        playerlist.setTitle("Visitors, Visiteurs, Besucher")
+                        playerlist.noteSetTitle("Visitors, Visiteurs, Besucher")
                         playerlist.noteSetText(thetext)
                         deviceInbox.addNode(playerlist)

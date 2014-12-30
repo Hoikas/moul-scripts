@@ -4755,7 +4755,7 @@ class xKI(ptModifier):
                 # Create the note.
                 note = ptVaultTextNoteNode(0)
                 note.noteSetText(PtGetLocalizedString("KI.Journal.InitialMessage"))
-                note.setTitleW(PtGetLocalizedString("KI.Journal.InitialTitle"))
+                note.noteSetTitle(PtGetLocalizedString("KI.Journal.InitialTitle"))
 
                 self.BKCurrentContent = journal.addNode(note)
                 return self.BKCurrentContent
@@ -4840,7 +4840,7 @@ class xKI(ptModifier):
                     imgElem.setImageFromScrShot()
                 else:
                     imgElem.imageSetImage(image)
-                imgElem.setTitleW(PtGetLocalizedString("KI.Image.InitialTitle"))
+                imgElem.noteSetTitle(PtGetLocalizedString("KI.Image.InitialTitle"))
                 self.BKCurrentContent = journal.addNode(imgElem)
                 return self.BKCurrentContent
             else:
@@ -5456,7 +5456,7 @@ class xKI(ptModifier):
                                         # Make sure that the player actually added something (so as not to get a blank title).
                                         if jTitle != PtGetLocalizedString("KI.Journal.InitialTitle"):
                                             jTitle = jTitle[len(PtGetLocalizedString("KI.Journal.InitialTitle")):]
-                                    edElement.setTitleW(jTitle)
+                                    edElement.noteSetTitle(jTitle)
                                 elif self.BKEditField == kGUI.BKEditFieldPICTitle:
                                     edElement = edElement.upcastToImageNode()
                                     pTitle = editBox.getStringW()
@@ -5464,7 +5464,7 @@ class xKI(ptModifier):
                                         # Make sure that the player actually added something (so as not to get a blank title).
                                         if pTitle != PtGetLocalizedString("KI.Image.InitialTitle"):
                                             pTitle = pTitle[len(PtGetLocalizedString("KI.Image.InitialTitle")):]
-                                    edElement.setTitleW(pTitle)
+                                    edElement.noteSetTitle(pTitle)
                                 edElement.save()
                         else:
                             if self.BKEditField == kGUI.BKEditFieldJRNNote:

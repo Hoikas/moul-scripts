@@ -102,7 +102,7 @@ class nb01UpdateHoodInfoImager(ptResponder):
                         playerlist = itemtn
                         break
                     elif itemtn.getTitle() == "Most Recent Visitors":
-                        itemtn.setTitle("Visitors, Visiteurs, Besucher")
+                        itemtn.noteSetTitle("Visitors, Visiteurs, Besucher")
                         playerlist = itemtn
                         break
 
@@ -123,7 +123,7 @@ class nb01UpdateHoodInfoImager(ptResponder):
                 thetext = currenttimestr + (" " * (30 - len(currenttimestr))) + playername
                 
                 playerlist = ptVaultTextNoteNode(0)
-                playerlist.setTitle("Visitors, Visiteurs, Besucher")
+                playerlist.noteSetTitle("Visitors, Visiteurs, Besucher")
                 playerlist.noteSetText(thetext)
                 deviceInbox.addNode(playerlist)
 
@@ -193,7 +193,7 @@ class nb01UpdateHoodInfoImager(ptResponder):
                 hoodpelletscore.forceSave()
             else:
                 hoodpelletscore = ptVaultTextNoteNode(0)
-                hoodpelletscore.setTitle("Neighborhood Pellet Score")
+                hoodpelletscore.noteSetTitle("Neighborhood Pellet Score")
                 newText = str(hoodpoints)
                 hoodpelletscore.noteSetText(newText)
                 deviceInbox.addNode(hoodpelletscore)
@@ -243,7 +243,7 @@ class nb01UpdateHoodInfoImager(ptResponder):
                 playername = PtGetLocalPlayer().getPlayerName()
                 thetext = "%s\t%i\n" % (newplayername, pelletscore)
                 pelletscores = ptVaultTextNoteNode(0)
-                pelletscores.setTitle("Pellet Scores")
+                pelletscores.noteSetTitle("Pellet Scores")
                 pelletscores.noteSetText(thetext)
                 deviceInbox.addNode(pelletscores)
 

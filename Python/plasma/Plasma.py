@@ -9461,8 +9461,7 @@ Sets the subtype of the this text note node."""
         pass
 
     def noteSetTitle(self,title):
-        """LEGACY
-Sets the title of this text note node."""
+        """Sets the title of this text note node."""
         pass
 
     def noteSetType(self,type):
@@ -9516,14 +9515,6 @@ Sets the type of text note for this text note node."""
 
     def setSubType(self,subType):
         """Sets the subtype of the this text note node."""
-        pass
-
-    def setTitle(self,title):
-        """Sets the title of this text note node."""
-        pass
-
-    def setTitleW(self,title):
-        """Unicode version of setTitle"""
         pass
 
     def setType(self,type):
