@@ -88,6 +88,7 @@ kLiveMovieName = "avi/URULiveIntro.webm"
 kDemoMovieName = "avi/UruPreview.webm"
 gPreviewStarted = 0
 prevAudioDeviceName = None
+gAudioDevices = ()
 
 # =====================================
 # Aspect Ratios
@@ -1244,7 +1245,7 @@ class xOptionsMenu(ptModifier):
                     if self.restartAudio:
                         audio = ptAudioControl()
                         audioField = ptGUIControlKnob(AudioSettingsDlg.dialog.getControlFromTag(kAudioModeID))
-                        audModeNum = audio.getNumAudioDevices() - 1
+                        audModeNum = len(gAudioDevices) - 1
                         curSelection = round(audioField.getValue() * audModeNum) 
                         intCurSelection = int(curSelection)
 
@@ -1252,7 +1253,7 @@ class xOptionsMenu(ptModifier):
                         EAXcheckbox = ptGUIControlCheckBox(AudioSettingsDlg.dialog.getControlFromTag(kAudioModeCBID03))
                         audio.useEAXAcceleration(EAXcheckbox.isChecked())
 
-                        audio.setDeviceName(audio.getAudioDeviceName(intCurSelection), 1)
+                        audio.setPlaybackDevice(gAudioDevices[intCurSelection], 1)
                     self.WriteAudioControls()
 
             elif event == kAction or event == kValueChanged:
@@ -1310,23 +1311,20 @@ class xOptionsMenu(ptModifier):
                     self.restartAudio = 1
                     audio = ptAudioControl()
                     #~ print "Number of Audio Devices: %d" % (audio.getNumAudioDevices())
-                    audModeNum = audio.getNumAudioDevices() - 1
+                    audModeNum = len(gAudioDevices)  - 1
                     curSelection = round(control.getValue() * audModeNum)
                     intCurSelection = int(curSelection)
                     control.setValue(curSelection/audModeNum)
 
-                    audioDeviceName = audio.getAudioDeviceName(intCurSelection)
-
+                    audioDeviceName = gAudioDevices[intCurSelection]
                     audioModeCtrlTextBox = ptGUIControlTextBox(AudioSettingsDlg.dialog.getControlFromTag(kAudioModeTextID))
-                    curText = audioModeCtrlTextBox.getString()
-                    if curText != audio.getAudioDeviceName(intCurSelection):
-                        audioModeCtrlTextBox.setString(audioDeviceName)
+                    audioModeCtrlTextBox.setStringW(audio.getFriendlyDeviceName(audioDeviceName))
 
                     if audioDeviceName != prevAudioDeviceName:  #Only update the EAX checkbox when the mouse has been let up...
                         print "Audio Device Name changed!"
                         prevAudioDeviceName = audioDeviceName
                         EAXcheckbox = ptGUIControlCheckBox(AudioSettingsDlg.dialog.getControlFromTag(kAudioModeCBID03))
-                        if not audio.supportsEAX(audioDeviceName):
+                        if not audio.isEAXSupported():
                             print "Disabling EAX checkbox"
                             #Disable EAX checkbox
                             EAXcheckbox.disable()
@@ -1670,7 +1668,7 @@ class xOptionsMenu(ptModifier):
 
         EAXcheckbox = ptGUIControlCheckBox(AudioSettingsDlg.dialog.getControlFromTag(kAudioModeCBID03))
 
-        xIniAudio.SetAudioMode( true, audio.getDeviceName(), EAXcheckbox.isChecked() )
+        xIniAudio.SetAudioMode( true, audio.getPlaybackDevice(), EAXcheckbox.isChecked() )
         #xIniAudio.SetAudioMode( audio.isEnabled(), audio.getDeviceName(), EAXcheckbox.isChecked() )
         #xIniAudio.SetAudioMode( audio.isEnabled(), audio.getDeviceName(), audio.isUsingEAXAcceleration() )
         #xIniAudio.SetMicLevel( audio.getMicLevel() )
@@ -1679,10 +1677,13 @@ class xOptionsMenu(ptModifier):
         xIniAudio.WriteIni()
 
     def InitAudioControlsGUI(self):
+        global gAudioDevices
         global prevAudioDeviceName
         
         xIniAudio.ReadIni()
         audio = ptAudioControl()
+
+        gAudioDevices = audio.getPlaybackDevices()
 
         audioField = ptGUIControlKnob(AudioSettingsDlg.dialog.getControlFromTag(kAudioNumberOfSoundsSliderTag))
         audioField.setValue( audio.getPriorityCutoff() )
@@ -1714,12 +1715,12 @@ class xOptionsMenu(ptModifier):
         respDisableItems.run(self.key, state="enableEAX")
 
         audioField = ptGUIControlKnob(AudioSettingsDlg.dialog.getControlFromTag(kAudioModeID))
-        numAudioDevices = audio.getNumAudioDevices() - 1.0
+        numAudioDevices = len(gAudioDevices) - 1.0
 
         if numAudioDevices > 0:
-            for num in range(audio.getNumAudioDevices()):
-                if audio.getAudioDeviceName(num) == audio.getDeviceName():
-                    if not audio.supportsEAX(audio.getDeviceName()):
+            for num, device in enumerate(gAudioDevices):
+                if gAudioDevices[num] == audio.getPlaybackDevice():
+                    if not audio.isEAXSupported():
                         EAXcheckbox.disable()
                         respDisableItems.run(self.key, state="disableEAX")
                         EAXcheckbox.setChecked(false)
@@ -1727,8 +1728,8 @@ class xOptionsMenu(ptModifier):
 
                     audioField.setValue(num/numAudioDevices)
                     audioModeCtrlTextBox = ptGUIControlTextBox(AudioSettingsDlg.dialog.getControlFromTag(kAudioModeTextID))
-                    audioDeviceName = prevAudioDeviceName = audio.getAudioDeviceName(num)
-                    audioModeCtrlTextBox.setString(audioDeviceName)
+                    audioDeviceName = prevAudioDeviceName = audio.getPlaybackDevice()
+                    audioModeCtrlTextBox.setStringW(audio.getFriendlyDeviceName(device))
         else:
             EAXcheckbox.disable()
             respDisableItems.run(self.key, state="disableEAX")
